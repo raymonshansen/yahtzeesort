@@ -24,9 +24,9 @@ void print_array(container_t *array){
 
 /*
   A simple PRNG(Pseudo Random Number Generator)
-  used to populate the array with numbers. Takes in 
+  used to populate the array with numbers. Takes in
   the min and max values that sets the wanted range.
-  Return values can include BOTH input values! 
+  Return values can include BOTH input values!
 */
 int randint(int from, int to){
 	int low = 0;
@@ -39,14 +39,14 @@ int randint(int from, int to){
 		low = to;
 		high = from + 1;
 	}
-	
+
 	return (rand() % (high - low)) + low;
 }
 
 /*
-  The modern version of the Fisher-Yates 
-  shuffle algorithm, introduced in 1964 
-  by Richard Durstenfeld. It does an 
+  The modern version of the Fisher-Yates
+  shuffle algorithm, introduced in 1964
+  by Richard Durstenfeld. It does an
   in-place shuffle of the array.
 */
 void shuffle(container_t *array){
@@ -62,24 +62,24 @@ void shuffle(container_t *array){
 }
 
 /*
-  Function to find the largest sequential 
+  Function to find the largest sequential
   part of an array. This is then extracted
   and returned. The remaining array is
   rewritten to omit the missing part. Takes
   the array and its size(N) as input.
 */
-void extract_sequence(container_t *array){
+container_t *extract_sequence(container_t *array){
 	// Declaring the conters
 	int i;
 	int greatest = 1;
 	int size = 1;
-	int j = 0; 
+	int j = 0;
 	int startindex = 0;
 	// Iterate through the array.
 	for(i = 0; i < (array->size-greatest); i++){
 		size = 1;
 		j = i;
-		// Check for increasing consequtive values, 
+		// Check for increasing consequtive values,
 		// or falling off the edge of the array.
 		while((j+1 < array->size) && (array->array[j+1] >= array->array[j])){
 			size++;
@@ -123,15 +123,15 @@ void extract_sequence(container_t *array){
 		i++;
 	}
 	print_array(newarray);
-
+	return newarray;
 }
 
 /*
-  A sorting algorithm based on 
+  A sorting algorithm based on
   yahtzee. It randomly shuffles
-  the array and extracts the largest 
-  sequential part and merges that into the 
-  finished array, then repeat until the 
+  the array and extracts the largest
+  sequential part and merges that into the
+  finished array, then repeat until the
   whole array is sorted.
 */
 int main(int argc, char const *argv[])
@@ -154,9 +154,11 @@ int main(int argc, char const *argv[])
 	}
 	printf("Original array\n");
 	print_array(array);
-	shuffle(array);
-	print_array(array);
 	// Find the largest sequential part of the array
-	extract_sequence(array);
+	while (array->size > 0){
+		shuffle(array);
+		array = extract_sequence(array);
+
+	}
 	return 0;
 }
