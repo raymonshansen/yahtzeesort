@@ -59,7 +59,7 @@ void print_array(array_t *array){
   by Richard Durstenfeld. It does an
   in-place shuffle of the array.
 */
-void shuffle(container_t *array){
+void shuffle(array_t *array){
     int i, j, temp;
     // Find a random index in the array and swap with current
     for(i = 0; i <= array->size - 2; i++){
@@ -125,10 +125,27 @@ array_t* get_remaing_array(array_t* array, int sub_size, int sub_start){
 /*
   Function to merge two sorted arrays and return
   the resulting array.
+  public static int[] merge(int[] a, int[] b) {
+
+    int[] answer = new int[a.length + b.length];
+    int i = 0, j = 0, k = 0;
+
+    while (i < a.length && j < b.length)  
+       answer[k++] = a[i] < b[j] ? a[i++] :  b[j++];
+
+    while (i < a.length)  
+        answer[k++] = a[i++];
+
+
+    while (j < b.length)    
+        answer[k++] = b[j++];
+
+    return answer;
 */
 array_t* merge_sorted_arrays(array_t* first, array_t* second){
     // Make space for the combined arrays
-    third = new_array(first->size + second->size);
+    printf("size of merged: %d\n", first->size + second->size);
+    array_t* third = new_array(first->size + second->size);
     
     // Loop over both and insert smallest all the time.
     int first_cur = 0;
@@ -156,14 +173,28 @@ array_t* merge_sorted_arrays(array_t* first, array_t* second){
   Yahtzee-sort algorithm. 
 */
 array_t* yahtzee_sort(array_t* original){
-    array_t* result = new_array(original->size);
+    array_t* result = new_array(0);
     int* sub_size = calloc(1, sizeof(int));
     int* sub_start = calloc(1, sizeof(int));
-    array_t* sub = find_largest_sub_array(original, *sub_size, *sub_start);
-    array_t* remaining = get_remaing_array(original, sub_size, sub_start);
-    while(sub->size != 0){
-        // Put together...
+    // Find the largest sub_array, its start-index and size
+    array_t* sub = find_largest_sub_array(original, sub_size, sub_start);
+    // extract what remains
+    array_t* remaining = get_remaing_array(original, *sub_size, *sub_start);
+    printf("remaining:");
+    print_array(remaining);
+    // Combine gathered results
+    result = merge_sorted_arrays(result, sub);
+    printf("merged:\n");
+    print_array(result);
+    /*
+    while(remaining->size > 0){
+        shuffle(remaining);
+        sub = find_largest_sub_array(remaining, sub_size, sub_start);
+        remaining = get_remaing_array(remaining, *sub_size, *sub_start);
+        result = merge_sorted_arrays(result, sub);
     }
+    */
+    return result;
 }
 
 int main(int argc, char const *argv[])
@@ -186,15 +217,10 @@ int main(int argc, char const *argv[])
 
     printf("original array:");
     print_array(original_array);
-    int* sub_size = calloc(1, sizeof(int));
-    int* sub_start = calloc(1, sizeof(int));
-    array_t* sub = find_largest_sub_array(original_array, sub_size, sub_start);
-    printf("sub_array_size: %d, sub_array_start: %d\n", *sub_size, *sub_start);
-    printf("sub_array:");
-    print_array(sub);
-    array_t* remaining = get_remaing_array(original_array, *sub_size, *sub_start);
-    printf("remaining:");
-    print_array(remaining);
+
+    array_t* result = yahtzee_sort(original_array);
+    printf("sorted array:");
+    print_array(result);
 
     // Cleanup
     free(original_array);
