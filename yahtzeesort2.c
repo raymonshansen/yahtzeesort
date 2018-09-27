@@ -125,22 +125,6 @@ array_t* get_remaing_array(array_t* array, int sub_size, int sub_start){
 /*
   Function to merge two sorted arrays and return
   the resulting array.
-  public static int[] merge(int[] a, int[] b) {
-
-    int[] answer = new int[a.length + b.length];
-    int i = 0, j = 0, k = 0;
-
-    while (i < a.length && j < b.length)  
-       answer[k++] = a[i] < b[j] ? a[i++] :  b[j++];
-
-    while (i < a.length)  
-        answer[k++] = a[i++];
-
-
-    while (j < b.length)    
-        answer[k++] = b[j++];
-
-    return answer;
 */
 array_t* merge_sorted_arrays(array_t* a, array_t* b){
     // Make space for the combined arrays
@@ -151,8 +135,11 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
     int j = 0;
     int k = 0;
 
-    while(i < a->size || j < b->size){
-        merged->array[k++] = a->array[i] < b->array[j] ? a->array[i++] : b->array[j++];
+    while((i < a->size) && (j < b->size)){
+        if (a->array[i] < b->array[j]) 
+            merged->array[k++] = a->array[i++]; 
+        else
+            merged->array[k++] = b->array[j++]; 
         // Insert whatever remains.
         while(i < a->size){
             merged->array[k++] = a->array[i++];
@@ -161,6 +148,7 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
             merged->array[k++] = b->array[j++];
         }
     }
+    print_array(merged);
     return merged;
 }
 
@@ -169,19 +157,23 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
 */
 array_t* yahtzee_sort(array_t* original){
     array_t* result = new_array(0);
-    int* sub_size = calloc(1, sizeof(int));
-    int* sub_start = calloc(1, sizeof(int));
+    int sub_size = 0;
+    int sub_start = 0;
     // Find the largest sub_array, its start-index and size
-    array_t* sub = find_largest_sub_array(original, sub_size, sub_start);
+    array_t* sub = find_largest_sub_array(original, &sub_size, &sub_start);
+    print_array(sub);
     // extract what remains
-    array_t* remaining = get_remaing_array(original, *sub_size, *sub_start);
+    array_t* remaining = get_remaing_array(original, sub_size, sub_start);
+    print_array(remaining);
     // Combine gathered results
     result = merge_sorted_arrays(result, sub);
+    print_array(result);
+
 
     while(remaining->size > 0){
         shuffle(remaining);
-        sub = find_largest_sub_array(remaining, sub_size, sub_start);
-        remaining = get_remaing_array(remaining, *sub_size, *sub_start);
+        sub = find_largest_sub_array(remaining, &sub_size, &sub_start);
+        remaining = get_remaing_array(remaining, sub_size, sub_start);
         result = merge_sorted_arrays(result, sub);
     }
     return result;
@@ -209,6 +201,7 @@ int main(int argc, char const *argv[])
     print_array(original_array);
 
     array_t* result = yahtzee_sort(original_array);
+
     printf("sorted array:");
     print_array(result);
 
