@@ -142,31 +142,26 @@ array_t* get_remaing_array(array_t* array, int sub_size, int sub_start){
 
     return answer;
 */
-array_t* merge_sorted_arrays(array_t* first, array_t* second){
+array_t* merge_sorted_arrays(array_t* a, array_t* b){
     // Make space for the combined arrays
-    printf("size of merged: %d\n", first->size + second->size);
-    array_t* third = new_array(first->size + second->size);
-    
-    // Loop over both and insert smallest all the time.
-    int first_cur = 0;
-    int second_cur = 0;
-    int third_cur = 0;
+    array_t* merged = new_array(a->size + b->size);
 
-    while((first_cur < first->size) && (second_cur < second->size)){
-        if(first->array[first_cur] < second->array[second_cur]){
-            third->array[third_cur++] = first->array[first_cur++];
-        } else {
-            third->array[third_cur++] = second->array[second_cur++];
-        }
+    // Loop over both and insert smallest all the time.
+    int i = 0;
+    int j = 0;
+    int k = 0;
+
+    while(i < a->size || j < b->size){
+        merged->array[k++] = a->array[i] < b->array[j] ? a->array[i++] : b->array[j++];
         // Insert whatever remains.
-        while(first_cur < first->size){
-            third->array[third_cur++] = first->array[first_cur++];
+        while(i < a->size){
+            merged->array[k++] = a->array[i++];
         }
-        while(second_cur < second->size){
-            third->array[third_cur++] = second->array[second_cur++];
+        while(j < b->size){
+            merged->array[k++] = b->array[j++];
         }
     }
-    return third;
+    return merged;
 }
 
 /*
@@ -180,20 +175,15 @@ array_t* yahtzee_sort(array_t* original){
     array_t* sub = find_largest_sub_array(original, sub_size, sub_start);
     // extract what remains
     array_t* remaining = get_remaing_array(original, *sub_size, *sub_start);
-    printf("remaining:");
-    print_array(remaining);
     // Combine gathered results
     result = merge_sorted_arrays(result, sub);
-    printf("merged:\n");
-    print_array(result);
-    /*
+
     while(remaining->size > 0){
         shuffle(remaining);
         sub = find_largest_sub_array(remaining, sub_size, sub_start);
         remaining = get_remaing_array(remaining, *sub_size, *sub_start);
         result = merge_sorted_arrays(result, sub);
     }
-    */
     return result;
 }
 
