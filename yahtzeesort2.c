@@ -158,6 +158,7 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
     while(j < b->size){
         merged->array[k++] = b->array[j++];
     }
+    dealloc_array(a);
     return merged;
 }
 
@@ -174,14 +175,15 @@ array_t* yahtzee_sort(array_t* original){
     array_t* remaining = get_remaining_array(original, sub_size, sub_start);
     // Combine gathered results
     result = merge_sorted_arrays(result, sub);
+    dealloc_array(sub);
 
-    while(remaining->size > 0){
+    while(result->size < original->size){
         shuffle(remaining);
         sub = find_largest_sub_array(remaining, &sub_size, &sub_start);
         remaining = get_remaining_array(remaining, sub_size, sub_start);
         result = merge_sorted_arrays(result, sub);
+        dealloc_array(sub);
     }
-    dealloc_array(sub);
     dealloc_array(remaining);
     return result;
 }
