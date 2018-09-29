@@ -128,6 +128,7 @@ array_t* get_remaining_array(array_t* array, int sub_size, int sub_start){
         new->array[n] = array->array[i];
         i++;
     }
+    dealloc_array(array);
     return new;
 }
 
@@ -165,25 +166,22 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
 /*
   Yahtzee-sort algorithm. 
 */
-array_t* yahtzee_sort(array_t* original){
+array_t* yahtzee_sort(array_t* remaining){
+    int start_size = remaining->size;
+    int cur_size = 0;
     array_t* result = new_array(0);
     int sub_size = 0;
     int sub_start = 0;
-    // Find the largest sub_array, its start-index and size
-    array_t* sub = find_largest_sub_array(original, &sub_size, &sub_start);
-    // extract what remains
-    array_t* remaining = get_remaining_array(original, sub_size, sub_start);
-    // Combine gathered results
-    result = merge_sorted_arrays(result, sub);
-    dealloc_array(sub);
-
-    while(result->size < original->size){
+    array_t* sub;
+    do{
         shuffle(remaining);
         sub = find_largest_sub_array(remaining, &sub_size, &sub_start);
         remaining = get_remaining_array(remaining, sub_size, sub_start);
         result = merge_sorted_arrays(result, sub);
+        cur_size = result->size;
         dealloc_array(sub);
-    }
+    } while(cur_size < start_size);
+
     dealloc_array(remaining);
     return result;
 }
@@ -216,6 +214,5 @@ int main(int argc, char const *argv[])
 
     // Cleanup
     dealloc_array(result);
-    dealloc_array(original_array);
     return 0;
 }
