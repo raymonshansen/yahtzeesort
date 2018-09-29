@@ -136,19 +136,19 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
     int k = 0;
 
     while((i < a->size) && (j < b->size)){
-        if (a->array[i] < b->array[j]) 
-            merged->array[k++] = a->array[i++]; 
-        else
-            merged->array[k++] = b->array[j++]; 
-        // Insert whatever remains.
-        while(i < a->size){
+        if (a->array[i] < b->array[j]){
             merged->array[k++] = a->array[i++];
-        }
-        while(j < b->size){
+        } else {
             merged->array[k++] = b->array[j++];
         }
     }
-    print_array(merged);
+    // Insert whatever remains.
+    while(i < a->size){
+        merged->array[k++] = a->array[i++];
+    }
+    while(j < b->size){
+        merged->array[k++] = b->array[j++];
+    }
     return merged;
 }
 
@@ -161,14 +161,10 @@ array_t* yahtzee_sort(array_t* original){
     int sub_start = 0;
     // Find the largest sub_array, its start-index and size
     array_t* sub = find_largest_sub_array(original, &sub_size, &sub_start);
-    print_array(sub);
     // extract what remains
     array_t* remaining = get_remaing_array(original, sub_size, sub_start);
-    print_array(remaining);
     // Combine gathered results
     result = merge_sorted_arrays(result, sub);
-    print_array(result);
-
 
     while(remaining->size > 0){
         shuffle(remaining);
@@ -176,6 +172,8 @@ array_t* yahtzee_sort(array_t* original){
         remaining = get_remaing_array(remaining, sub_size, sub_start);
         result = merge_sorted_arrays(result, sub);
     }
+    free(sub);
+    free(remaining);
     return result;
 }
 
@@ -206,6 +204,7 @@ int main(int argc, char const *argv[])
     print_array(result);
 
     // Cleanup
+    free(result);
     free(original_array);
     return 0;
 }
