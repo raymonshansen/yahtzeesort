@@ -5,8 +5,8 @@
 
 
 // Struct to hold an array and its size
-typedef struct numarray array_t;
-struct numarray {
+typedef struct vector array_t;
+struct vector {
 	int *array;
 	int size;
 };
@@ -15,10 +15,18 @@ struct numarray {
   Allocate a new numbered array.
 */
 array_t* new_array(int size){
-    array_t* new = malloc(sizeof(array_t));
+    array_t* new = malloc(sizeof(array_t) * sizeof(*new));
     new->size = size;
-    new->array = calloc(size, sizeof(int));
+    new->array = malloc(sizeof(int) * size);
     return new;
+}
+
+/*
+  Deallocate a vector struct properly.
+*/
+void dealloc_array(array_t* vector){
+    free(vector->array);
+    free(vector);
 }
 
 /*
@@ -109,16 +117,18 @@ array_t* find_largest_sub_array(array_t* array, int* sub_array_size, int* sub_ar
 /*
   Function to remove the sub array and return the remaining one.
 */
-array_t* get_remaing_array(array_t* array, int sub_size, int sub_start){
+array_t* get_remaining_array(array_t* array, int sub_size, int sub_start){
     array_t* new = new_array(array->size - sub_size);
-    int i, n;
-    // Hackety, hack!
-    for(i = 0, n = 0; i < array->size; i++, n++){
+    int i = 0;
+    int n;
+    for(n = 0; n < new->size; n++){
         if(i == sub_start){
             i += sub_size;
         }
         new->array[n] = array->array[i];
+        i++;
     }
+    dealloc_array(array);
     return new;
 }
 
@@ -149,31 +159,30 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
     while(j < b->size){
         merged->array[k++] = b->array[j++];
     }
+    dealloc_array(a);
     return merged;
 }
 
 /*
   Yahtzee-sort algorithm. 
 */
-array_t* yahtzee_sort(array_t* original){
+array_t* yahtzee_sort(array_t* remaining){
+    int start_size = remaining->size;
+    int cur_size = 0;
     array_t* result = new_array(0);
     int sub_size = 0;
     int sub_start = 0;
-    // Find the largest sub_array, its start-index and size
-    array_t* sub = find_largest_sub_array(original, &sub_size, &sub_start);
-    // extract what remains
-    array_t* remaining = get_remaing_array(original, sub_size, sub_start);
-    // Combine gathered results
-    result = merge_sorted_arrays(result, sub);
-
-    while(remaining->size > 0){
+    array_t* sub;
+    do{
         shuffle(remaining);
         sub = find_largest_sub_array(remaining, &sub_size, &sub_start);
-        remaining = get_remaing_array(remaining, sub_size, sub_start);
+        remaining = get_remaining_array(remaining, sub_size, sub_start);
         result = merge_sorted_arrays(result, sub);
-    }
-    free(sub);
-    free(remaining);
+        cur_size = result->size;
+        dealloc_array(sub);
+    } while(cur_size < start_size);
+
+    dealloc_array(remaining);
     return result;
 }
 
@@ -204,7 +213,6 @@ int main(int argc, char const *argv[])
     print_array(result);
 
     // Cleanup
-    free(result);
-    free(original_array);
+    dealloc_array(result);
     return 0;
 }
