@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <time.h>
 
 
@@ -204,15 +203,15 @@ int main(int argc, char const *argv[])
         original_array->array[i] = randint(0, original_array->size - 1);
     }
 
-    printf("original array:");
-    print_array(original_array);
+    //printf("original array:");
+    //print_array(original_array);
 
     array_t* result = yahtzee_sort(original_array);
 
-    printf("sorted array:");
-    print_array(result);
+    //printf("sorted array:");
+    //print_array(result);
 
     // Cleanup
     dealloc_array(result);
-    return 0;
+    return 1;
 }
