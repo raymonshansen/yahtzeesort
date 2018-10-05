@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define MIN_SUB_ARRAY 4
 
 // Struct to hold an array and its size
 typedef struct vector array_t;
@@ -15,8 +16,16 @@ struct vector {
 */
 array_t* new_array(int size){
     array_t* new = malloc(sizeof(array_t) * sizeof(*new));
+    if(new == NULL){
+        printf("Error in new_array() struct allocation.");
+        exit(-1);
+    }
     new->size = size;
     new->array = malloc(sizeof(int) * size);
+    if(new->array == NULL){
+        printf("Error in new_array() array allocation.");
+        exit(-1);
+    }
     return new;
 }
 
@@ -173,9 +182,12 @@ array_t* yahtzee_sort(array_t* remaining){
     int sub_start = 0;
     array_t* sub;
     do{
-        shuffle(remaining);
         sub = find_largest_sub_array(remaining, &sub_size, &sub_start);
         remaining = get_remaining_array(remaining, sub_size, sub_start);
+        // Only shuffle when we can't find large enough runs
+        if(sub_size < MIN_SUB_ARRAY || remaining->size < (MIN_SUB_ARRAY * 3)){
+            shuffle(remaining);
+        }
         result = merge_sorted_arrays(result, sub);
         cur_size = result->size;
         dealloc_array(sub);
