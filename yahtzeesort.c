@@ -217,13 +217,14 @@ int main(int argc, char const *argv[])
 
     //printf("original array:");
     //print_array(original_array);
-
+    clock_t start = clock();
     array_t* result = yahtzee_sort(original_array);
+    double spent = (clock() - start) / (double)CLOCKS_PER_SEC;
 
     //printf("sorted array:");
     //print_array(result);
+    printf("%f\n", spent);
 
-    // Cleanup
     dealloc_array(result);
-    return 1;
+    return 0;
 }
