@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #define MIN_SUB_ARRAY 4
@@ -167,12 +168,87 @@ array_t* merge_sorted_arrays(array_t* a, array_t* b){
     while(j < b->size){
         merged->array[k++] = b->array[j++];
     }
-    dealloc_array(a);
     return merged;
 }
 
+void split(array_t* array, array_t** a, array_t** b){
+    int breakpoint = array->size / 2;
+    *a = new_array(breakpoint);
+    *b = new_array(breakpoint + (array->size % 2));
+    memcpy((*a)->array, array->array, (*a)->size * sizeof(int));
+    memcpy((*b)->array, array->array + (*a)->size, (*b)->size * sizeof(int));
+}
+
 /*
-  Yahtzee-sort algorithm. 
+  Quick-sort algorithm.
+*/
+void quick_sort(array_t* array, int low, int high){
+    int key, i, j, temp;
+    if(low < high){
+        int pivot = (low + high) / 2;
+        // Put the pivot first
+        temp = array->array[low];
+        array->array[low] = array->array[pivot];
+        array->array[pivot] = temp;
+        key = array->array[low];
+        i = low + 1;
+        j = high;
+        while(i <= j){
+            while((i <= high) && (array->array[i] <= key))
+                i++;
+            while((j >= low) && (array->array[j] > key))
+                j--;
+            if( i < j){
+                temp = array->array[i];
+                array->array[i] = array->array[j];
+                array->array[j] = temp;
+            }
+        }
+        temp = array->array[low];
+        array->array[low] = array->array[j];
+        array->array[j] = temp;
+
+        quick_sort(array, low, j - 1);
+        quick_sort(array, j + 1, high);
+    }
+}
+
+
+/*
+  Bubble-sort algorithm.
+*/
+array_t* bubble_sort(array_t* array){
+
+    int i, j;
+    for (i = 0; i < array->size - 1; i++){
+        for (j = 0; j < array->size - i - 1; j++){
+            if (array->array[j] > array->array[j + 1]){
+                int temp = array->array[j];
+                array->array[j] = array->array[j + 1];
+                array->array[j + 1] = temp;
+            }
+        }
+    }
+    return array;
+}
+
+/*
+  Merge-sort algorithm.
+*/
+array_t* merge_sort(array_t* array){
+    if(array->size == 1){
+        return array;
+    }
+    array_t *a, *b;
+    split(array, &a, &b);
+
+    a = merge_sort(a);
+    b = merge_sort(b);
+    return merge_sorted_arrays(a, b);
+}
+
+/*
+  Yahtzee-sort algorithm.
 */
 array_t* yahtzee_sort(array_t* remaining){
     int start_size = remaining->size;
@@ -188,7 +264,9 @@ array_t* yahtzee_sort(array_t* remaining){
         if(sub_size < MIN_SUB_ARRAY || remaining->size < (MIN_SUB_ARRAY * 3)){
             shuffle(remaining);
         }
-        result = merge_sorted_arrays(result, sub);
+        array_t *new_result = merge_sorted_arrays(result, sub);
+        dealloc_array(result);
+        result = new_result;
         cur_size = result->size;
         dealloc_array(sub);
     } while(cur_size < start_size);
@@ -209,22 +287,45 @@ int main(int argc, char const *argv[])
 
     // Allocate space and populate the initial array with random int.
     array_t* original_array = new_array(size);
+    array_t* other_array = new_array(size);
+    array_t* bubble_array = new_array(size);
+    array_t* quick_array = new_array(size);
+
+
     srand((unsigned int)time(NULL));
     int i;
     for(i = 0; i < original_array->size; i++){
         original_array->array[i] = randint(0, original_array->size - 1);
+        other_array->array[i] = original_array->array[i];
+        bubble_array->array[i] = original_array->array[i];
+        quick_array->array[i] = original_array->array[i];
     }
 
-    //printf("original array:");
-    //print_array(original_array);
     clock_t start = clock();
-    array_t* result = yahtzee_sort(original_array);
-    double spent = (clock() - start) / (double)CLOCKS_PER_SEC;
+    array_t* yahtzee_result = yahtzee_sort(original_array);
+    double yahtzee_time = (clock() - start) / (double)CLOCKS_PER_SEC;
 
-    //printf("sorted array:");
-    //print_array(result);
-    printf("%f\n", spent);
+    start = clock();
+    array_t* merge_result = merge_sort(other_array);
+    double merge_time = (clock() - start) / (double)CLOCKS_PER_SEC;
 
-    dealloc_array(result);
+    start = clock();
+    array_t* bubble_result = bubble_sort(bubble_array);
+    double bubble_time = (clock() - start) / (double)CLOCKS_PER_SEC;
+
+    // printf("original array:");
+    // print_array(quick_array);
+    start = clock();
+    quick_sort(quick_array, 0, quick_array->size);
+    double quick_time = (clock() - start) / (double)CLOCKS_PER_SEC;
+
+    // printf("sorted array:");
+    // print_array(quick_array);
+    printf("%f, %f, %f, %f\n", yahtzee_time, merge_time, bubble_time, quick_time);
+
+    dealloc_array(yahtzee_result);
+    dealloc_array(merge_result);
+    dealloc_array(bubble_result);
+    dealloc_array(quick_array);
     return 0;
 }
